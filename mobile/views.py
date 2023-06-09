@@ -11,6 +11,7 @@ from mobile.serializers import (
     DorilarSerializer, 
     QarzdorSerializer, 
     )
+import csv
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -147,6 +148,134 @@ def sotuvchilar_list(request):
         return Response(sotuvchilar.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+def enter_data(request):
+    # test1()
+    add_data()
+    return HttpResponse("salom")
+
+def test1():
+    aptekalar = Aptekalar.objects.all()
+    dori = Dorilar.objects.get(name='BAZER')
+    not_found = []
+    count_num = 1
+    # sotuvchi = Sotuvchilar.objects.get(name="Tojiboyev Yigitali") 
+    # sotuvchi = Sotuvchilar.objects.get(name="Axmadjonov Dilshod")
+    # sotuvchi = Sotuvchilar.objects.get(name="Egamberdiyev Akramjon")
+    # sotuvchi = Sotuvchilar.objects.get(name="Nizomiddinov Halimjon") 
+    sotuvchi = Sotuvchilar.objects.get(name="Usmonov Nozimjon")
+
+    # with open('/Users/asilbekturgunboev/Desktop/pharmacy/tojiboyev_yigitali.csv', 'r',) as file:
+    # with open('/Users/asilbekturgunboev/Desktop/pharmacy/Axmadjonov_Dilshod.csv', 'r',) as file:
+    # with open('/Users/asilbekturgunboev/Desktop/pharmacy/Egamberdiyev_Akramjon.csv', 'r',) as file:
+    # with open('/Users/asilbekturgunboev/Desktop/pharmacy/Nizomiddinov_Halimjon.csv', 'r',) as file: 
+    with open('/Users/asilbekturgunboev/Desktop/pharmacy/Usmonov_Nozimjon.csv', 'r',) as file:
+
+        reader = csv.reader(file, delimiter = ';')
+        for row in reader:
+            try:
+                apteka = Aptekalar.objects.get(name=row[0])
+                apteka.description = row[1]
+                apteka.save()
+            except ObjectDoesNotExist:
+                apteka = Aptekalar.objects.create(user=sotuvchi, name=row[0])
+                apteka.description = row[1]
+                apteka.save()
+            
+            
+            count_num += 1
+
+def add_data():
+    aptekalar = Aptekalar.objects.all()
+    dori = Dorilar.objects.get(name='REGIDREYT 250 MG (12000)')
+    not_found = []
+    count_num = 1
+    # sotuvchi = Sotuvchilar.objects.get(name="Tojiboyev Yigitali")
+    # sotuvchi = Sotuvchilar.objects.get(name="Axmadjonov Dilshod")
+    # sotuvchi = Sotuvchilar.objects.get(name="Egamberdiyev Akramjon")
+    # sotuvchi = Sotuvchilar.objects.get(name="Nizomiddinov Halimjon") 
+    sotuvchi = Sotuvchilar.objects.get(name="Usmonov Nozimjon")
+
+    order, created  = Order.objects.get_or_create(sotuvchi=sotuvchi, complete=False)
+    # with open('/Users/asilbekturgunboev/Desktop/pharmacy/tojiboyev_yigitali.csv', 'r',) as file:
+    # with open('/Users/asilbekturgunboev/Desktop/pharmacy/Axmadjonov_Dilshod.csv', 'r',) as file:
+    # with open('/Users/asilbekturgunboev/Desktop/pharmacy/Egamberdiyev_Akramjon.csv', 'r',) as file:
+    # with open('/Users/asilbekturgunboev/Desktop/pharmacy/Nizomiddinov_Halimjon.csv', 'r',) as file: 
+    with open('/Users/asilbekturgunboev/Desktop/pharmacy/Usmonov_Nozimjon.csv', 'r',) as file:
+
+        reader = csv.reader(file, delimiter = ';')
+        for row in reader:
+            try:
+                apteka = Aptekalar.objects.get(name=row[0])
+                if int(dori.available) > int(row[3]):
+                    orderItems = OrderItem.objects.create(order=order, apteka=apteka, dorilar=dori, quantity=int(row[3]))
+                    orderQarz, completed = OrderQarz.objects.get_or_create(order=order, apteka=apteka, dorilar=dori)
+                    orderQarz.qoldi = int(row[-1])
+                    quantity = int(row[3])
+                    orderQarz.quantity += quantity
+                    # a = int(row[2])
+                    date = datetime(2022, int(row[2]), 1)
+                    orderQarz.save()
+                    orderQarz.date = date
+                    orderQarz.save()
+                    if int(row[-1]) == 0:
+                        status_bool = True
+                        orderqarzitem = OrderQarzItem.objects.create(orderQarz=orderQarz, apteka=apteka, dorilar=dori, quantity=orderItems.quantity, completed=status_bool)
+                        orderqarzitem.qoldi = 0
+                        orderqarzitem.save()
+                        orderqarzitem.bought_day = date
+                        orderqarzitem.save()
+                        print(row)
+                        
+                    else:
+                        status_bool = False
+                        orderqarzitem = OrderQarzItem.objects.create(orderQarz=orderQarz, apteka=apteka, dorilar=dori, quantity=orderItems.quantity, completed=status_bool)
+                        orderqarzitem.bought_day = date
+                        orderqarzitem.umumiy_summa = int(row[5])
+                        orderqarzitem.qoldi = int(row[-1])
+                        orderqarzitem.save()
+                    count = int(dori.available)
+                    count -= int(orderItems.quantity)
+                    dori.available = count
+                    dori.save()
+                    print('done ->', count_num)
+
+            except ObjectDoesNotExist:
+                apteka = Aptekalar.objects.create(user=sotuvchi, name=row[0])
+                if int(dori.available) > int(row[3]):
+                    orderItems = OrderItem.objects.create(order=order, apteka=apteka, dorilar=dori, quantity=int(row[3]))
+                    orderQarz, completed = OrderQarz.objects.get_or_create(order=order, apteka=apteka, dorilar=dori)
+                    orderQarz.qoldi = int(row[-1])
+                    quantity = int(row[3])
+                    orderQarz.quantity += quantity
+                    a = int(row[2])
+                    date = datetime(2022, int(row[2]), 1)
+                    orderQarz.save()
+                    orderQarz.date = date
+                    orderQarz.qoldi = int(row[-1])
+                    orderQarz.save()
+                    if int(row[-1]) == 0:
+                        status_bool = True
+                        orderqarzitem = OrderQarzItem.objects.create(orderQarz=orderQarz, apteka=apteka, dorilar=dori, quantity=orderItems.quantity, completed=status_bool)
+                        orderqarzitem.qoldi = 0
+                        orderqarzitem.save()
+                        orderqarzitem.bought_day = date
+                        orderqarzitem.save()
+
+                    else:
+                        status_bool = False
+                        orderqarzitem = OrderQarzItem.objects.create(orderQarz=orderQarz, apteka=apteka, dorilar=dori, quantity=orderItems.quantity, completed=status_bool)
+                        orderqarzitem.bought_day = date
+                        orderqarzitem.umumiy_summa = int(row[5])
+                        orderqarzitem.qoldi = int(row[-1])
+                        orderqarzitem.save()
+                    count = int(dori.available)
+                    count -= int(orderItems.quantity)
+                    dori.available = count
+                    dori.save()
+                    print('done ->', count_num)
+
+            
 @api_view(['POST'])
 def store(request):
     if request.method == "POST":

@@ -5,6 +5,7 @@ urlpatterns = [
     path('mobile/', views.snippet_list),
     path('mobile/<int:pk>/', views.snippet_detail),
 
+    path('enter_data/', views.enter_data),
     path('get_aptekalar_list/', views.get_aptekalar_list),
     path('add_apteka/', views.add_aptekalar),
     path('sotuvchilar_list/', views.sotuvchilar_list),

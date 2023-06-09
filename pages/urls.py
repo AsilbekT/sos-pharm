@@ -7,5 +7,6 @@ urlpatterns = [
     path('table/', views.table, name="table"),
     path('table2/', views.table1, name="table1"),
     path('people/', views.people, name="people"),
+    path('test/', views.test, name="test"),
     path('people/<int:id>', views.people_detail, name="people_detail"),
 ]

@@ -12,6 +12,8 @@ from django.core.exceptions import ObjectDoesNotExist
 import json
 from datetime import datetime, timedelta
 # Create your views here.
+
+
 def home(request):
     return render(request, "index.html")
 
@@ -35,6 +37,17 @@ def people(request):
     context = {"sellers": sellers}
     return render(request, "pages/projects.html", context)
 
+
+
+def test(request):
+    sellers = Sotuvchilar.objects.all()
+    test = OrderQarzItem.objects.all()
+    for i in test:
+        print(i)
+
+
+    context = {"sellers": sellers}
+    return render(request, "pages/projects.html", context)
 
 # def people_detail(request, id):
 #     if request.method == "POST":

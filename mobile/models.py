@@ -37,8 +37,9 @@ class Sotuvchilar(models.Model):
         items = order.orderitem_set.all()
         total = ""
         for i in items:
-            if i.apteka.name not in total:
-                total += i.apteka.name + '\n'
+            if i.apteka:
+                if i.apteka.name not in total:
+                    total += i.apteka.name + '\n'
         return total
         
     def __str__(self):
@@ -70,7 +71,8 @@ class Aptekalar(models.Model):
 
 
     def __str__(self):
-        return str(self.id)
+        return self.name
+        
 
 class Dorilar(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -127,7 +129,7 @@ class OrderItem(models.Model):
         return total
 
     def __str__(self):
-        return self.dorilar.name
+        return self.apteka.name
 
 
 class OrderQarz(models.Model):
@@ -157,15 +159,17 @@ class OrderQarz(models.Model):
         return total
 
     def __str__(self):
-        return self.dorilar.name
+        if self.apteka:
+            return self.apteka.name
+        return str(self.id)
 
 
 class OrderQarzItem(models.Model):
-    dorilar = models.ForeignKey(Dorilar, on_delete=models.SET_NULL, null=True)
-    orderQarz = models.ForeignKey(OrderQarz, on_delete=models.SET_NULL, null=True)
-    apteka = models.ForeignKey(Aptekalar, on_delete=models.SET_NULL, null=True)
+    dorilar = models.ForeignKey(Dorilar, on_delete=models.SET_NULL, null=True, blank=True)
+    orderQarz = models.ForeignKey(OrderQarz, on_delete=models.SET_NULL, null=True, blank=True)
+    apteka = models.ForeignKey(Aptekalar, on_delete=models.SET_NULL, null=True, blank=True)
     dori_name = models.CharField(max_length=200, blank=True)
-    apteka_name = models.CharField(max_length=200, blank=True)
+    apteka_name = models.CharField(max_length=200, blank=True, default="")
     quantity = models.IntegerField(default=0, null=True, blank=True)
     umumiy_summa = models.IntegerField(default=0, null=True, blank=True)
     qoldi = models.IntegerField(default=0, null=True, blank=True)
@@ -189,4 +193,4 @@ class OrderQarzItem(models.Model):
         return total
 
     def __str__(self):
-        return self.dorilar.name
+        return self.apteka_name
